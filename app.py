@@ -15,10 +15,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'Kehinde'
 api = Api(app)
 
-@app.before_first_request
-def create_tables():
-    db.create_all()
-
 #Api works with resource and every resource has to be a class
 app.config['JWT_AUTH_URL_RULE'] = '/login' #changed the authentication endpoint
 jwt = JWT(app, authenticate, identity) #/auth
