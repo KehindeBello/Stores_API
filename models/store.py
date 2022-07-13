@@ -16,7 +16,7 @@ class StoreModel(db.Model):
     
     @classmethod
     def get_by_name(cls, name):
-        return StoreModel.query.filter_by(name = name).first()
+        return cls.query.filter_by(name = name).first()
 
     def save_to_db(self):
         db.session.add(self)
