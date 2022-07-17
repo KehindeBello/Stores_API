@@ -30,7 +30,7 @@ class Item(Resource):
 
         data = Item.parser.parse_args()
         #data = request.get_json() #silent, force
-        item = ItemModel(name, data["price"], data['store_id']) #**data
+        item = ItemModel(name, **data) #data["price"], data['store_id']
 
         try:
             item.save_to_db()
@@ -50,12 +50,12 @@ class Item(Resource):
     def put(self,name):
         data = Item.parser.parse_args()
         item = ItemModel.get_by_name(name)
-        updated_item = ItemModel(name, **data)
 
-        if item is None:
-            item = ItemModel(name, **data) #data['price'], data['store_id']
-        else:
+        if item:
             item.price = data['price']
+        else:
+            item = ItemModel(name, **data) #data['price'], data['store_id']
+            
         
         item.save_to_db()
         
@@ -64,5 +64,5 @@ class Item(Resource):
 
 class ItemList(Resource):
     def get(self):
-        return {"item": [item.json() for item in ItemModel.query.all()]}, 200
+        return {"item": [item.json() for item in ItemModel.find_all()]}, 200
     #{"item": list(map(lambda x:x.json(),ItemModel.query.all()))}
