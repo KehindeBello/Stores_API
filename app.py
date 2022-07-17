@@ -32,6 +32,8 @@ app.config['JWT_EXPIRATION_DELTA'] = timedelta(seconds=600)
 #config JWT auth key name to be 'email' instead of default 'username'
 #app.config['JWT_AUTH_USERNAME_KEY'] = 'email'
 
+app.config['PROPAGATE_EXCEPTIONS'] = True
+
 #customize JWT auth response, include user_id in response body
 # Remember that the identity should be what you’ve returned by the authenticate() function
 @jwt.auth_response_handler
