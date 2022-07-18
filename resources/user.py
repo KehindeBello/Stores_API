@@ -1,22 +1,24 @@
-import sqlite3
+import hmac
 from flask_restful import Resource, reqparse
+from flask_jwt_extended import create_access_token, create_refresh_token
 from models.user import UserModel
 
-class UserRegister(Resource):
-    parser = reqparse.RequestParser()
-    parser.add_argument('username',
+_user_parser = reqparse.RequestParser()
+_user_parser.add_argument('username',
         type=str,
         required=True,
         help="Field cannot be blank"
     )
-    parser.add_argument('password',
+_user_parser.add_argument('password',
         type=str,
         required=True,
         help="Field cannot be blank"
     )
 
+
+class UserRegister(Resource):
     def post(self):
-        data = UserRegister.parser.parse_args()
+        data = _user_parser.parse_args()
 
         #avoid creating an already existing user
         if UserModel.find_by_username(data['username']):
@@ -41,3 +43,22 @@ class User(Resource):
         if user:
             user.delete_from_db()
         return {"message":"User deleted"}, 200
+
+class UserLogin(Resource):
+    
+    @classmethod
+    def post(cls):
+        data = _user_parser.parse_args()
+
+        user = UserModel.find_by_username(data['username'])
+        # check password
+        
+        if user and hmac.compare_digest(user.password, data["password"]):
+            access_token = create_access_token(identity=user.id, fresh=True) #identity is what the identity() function used to do
+            refresh_token = create_refresh_token(user.id)
+            return {
+                "access_token": access_token,
+                "refresh_token": refresh_token
+                }, 200
+        
+        return {"message": 'Invalid credentials'}, 401
