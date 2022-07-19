@@ -1,6 +1,7 @@
 import hmac
 from flask_restful import Resource, reqparse
-from flask_jwt_extended import create_access_token, create_refresh_token
+from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt, get_jwt_identity, jwt_required
+from blacklist import BLACKLIST
 from models.user import UserModel
 
 _user_parser = reqparse.RequestParser()
@@ -62,3 +63,18 @@ class UserLogin(Resource):
                 }, 200
         
         return {"message": 'Invalid credentials'}, 401
+
+class UserLogout(Resource):
+    @jwt_required()
+    def post(self):
+        jti = get_jwt()['jti']
+        BLACKLIST.add(jti)
+        return {"message":"Successfully logged out"}, 200
+
+class TokenRefresh(Resource):
+    #receive refresh token
+    @jwt_required(refresh=True)
+    def post(self):
+        current_user = get_jwt_identity()
+        new_token = create_access_token(identity=current_user, fresh=False)
+        return {"access_token": new_token}, 200
